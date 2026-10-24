@@ -1,0 +1,78 @@
+// The player's own words, so it reads the same in the app and in an offline file with no app around it.
+import type { Lang } from "./types";
+
+const en = {
+  play: "Play",
+  pause: "Pause",
+  next: "Next step",
+  back: "Previous step",
+  restart: "Start again",
+  speed: "Speed",
+  practice: "Step by step",
+  practiceHint: "Stop after each step",
+  steps: "Steps",
+  step: (n: number, of: number) => `Step ${n} of ${of}`,
+  doIt: "Do it now",
+  all: "All walkthroughs",
+  done: "That is the whole walkthrough.",
+  replay: "Watch again",
+  desk: "Computer",
+  phone: "Phone",
+  language: "Language",
+  device: "Screen",
+  minutes: (m: number) => (m < 1 ? "under a minute" : `${m} min`),
+  nSteps: (n: number) => `${n} steps`,
+  watch: "Watch",
+  title: "Learn the app, step by step",
+  lead: "Short walkthroughs of real tasks, recorded from the app itself. Play one like a video, or go a step at a time.",
+  signIn: "Sign in to see the walkthroughs for staff.",
+  none: "No walkthroughs are published yet.",
+  loading: "Loading…",
+  failed: "The walkthrough could not be loaded.",
+  keys: "Space plays or pauses; the arrow keys go back and forward.",
+  captured: (d: string) => `Recorded from the app on ${d}`,
+};
+type Words = typeof en;
+
+const hi: Words = {
+  play: "चलाएँ",
+  pause: "रोकें",
+  next: "अगला चरण",
+  back: "पिछला चरण",
+  restart: "फिर से शुरू करें",
+  speed: "गति",
+  practice: "एक-एक चरण",
+  practiceHint: "हर चरण के बाद रुकें",
+  steps: "चरण",
+  step: (n, of) => `चरण ${n} / ${of}`,
+  doIt: "अभी करके देखें",
+  all: "सभी मार्गदर्शिकाएँ",
+  done: "मार्गदर्शिका पूरी हुई।",
+  replay: "फिर से देखें",
+  desk: "कंप्यूटर",
+  phone: "फ़ोन",
+  language: "भाषा",
+  device: "स्क्रीन",
+  minutes: (m) => (m < 1 ? "एक मिनट से कम" : `${m} मिनट`),
+  nSteps: (n) => `${n} चरण`,
+  watch: "देखें",
+  title: "ऐप सीखें, एक-एक चरण",
+  lead: "असली कामों की छोटी मार्गदर्शिकाएँ, सीधे ऐप से रिकॉर्ड की गईं। वीडियो की तरह चलाएँ, या एक-एक चरण देखें।",
+  signIn: "कर्मचारियों की मार्गदर्शिकाएँ देखने के लिए प्रवेश करें।",
+  none: "अभी कोई मार्गदर्शिका प्रकाशित नहीं है।",
+  loading: "लोड हो रहा है…",
+  failed: "मार्गदर्शिका लोड नहीं हो सकी।",
+  keys: "स्पेस से चलाएँ या रोकें; तीर कुंजियों से आगे-पीछे जाएँ।",
+  captured: (d) => `ऐप से ${d} को रिकॉर्ड की गई`,
+};
+
+export const WORDS: Record<Lang, Words> = { en, hi };
+
+/** Who a walkthrough is for. */
+export const PERSONAS: Record<string, { en: string; hi: string }> = {
+  citizen: { en: "Citizens", hi: "नागरिक" },
+  "pt-clerk": { en: "Property tax clerk", hi: "संपत्ति कर लिपिक" },
+  "pt-verifier": { en: "Property tax document verifier", hi: "संपत्ति कर दस्तावेज़ सत्यापक" },
+  "pt-approver": { en: "Property tax approver", hi: "संपत्ति कर अनुमोदक" },
+  counter: { en: "Counter and cashier", hi: "काउंटर और खजांची" },
+};
