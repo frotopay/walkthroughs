@@ -257,7 +257,7 @@ function Stage({ m, step, prev, phase, src, quick }: { m: Manifest; step: Step; 
   const ring = !!box && (v === "look" || onAfter ? at >= ORDER.indexOf("aim") : phase === "aim" || phase === "act");
   const pointer = !!box && !onAfter && v !== "look" && (phase === "aim" || phase === "act");
   const typing = phase === "act" && (v === "fill" || v === "select") && !!step.action.value && !!box;
-  const ripple = phase === "act" && (v === "click" || v === "check" || v === "select") && !!box;
+  const ripple = phase === "act" && (v === "click" || v === "check" || v === "select" || v === "upload") && !!box;
 
   // Toward a small target, or when a computer's screen is shown small (on a phone), zoom in while acting on it.
   const narrow = m.device === "desk" && width > 0 && width < 640;

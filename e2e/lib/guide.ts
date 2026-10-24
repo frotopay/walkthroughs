@@ -21,7 +21,7 @@ export type Captions = {
 };
 
 type Box = { x: number; y: number; w: number; h: number };
-type Verb = "goto" | "click" | "fill" | "select" | "check" | "look";
+type Verb = "goto" | "click" | "fill" | "select" | "check" | "look" | "upload";
 type Step = {
   id: string; n: number; chapter: string | null; title: string; say: string;
   action: { verb: Verb; target?: string; value?: string };
@@ -111,6 +111,15 @@ export class Guide<C extends Captions> {
   check(id: keyof C["steps"] & string, target: Locator, opts: Opts = {}) {
     return this.act(id, "check", target, () => target.check(), opts);
   }
+  /** Choose files with a file widget's button, as a person picks them from the phone's gallery or the computer; the
+   *  step's value names them. */
+  upload(id: keyof C["steps"] & string, target: Locator, files: { name: string; mimeType: string; buffer: Buffer }[], opts: Opts = {}) {
+    return this.act(id, "upload", target, async () => {
+      const [chooser] = await Promise.all([this.page.waitForEvent("filechooser"), target.click()]);
+      await chooser.setFiles(files);
+    }, opts, files.map((f) => f.name).join(", "));
+  }
+
   /** A step with nothing to do but look: the target is shown and explained. */
   look(id: keyof C["steps"] & string, target?: Locator, opts: Opts = {}) {
     return this.act(id, "look", target, async () => {}, opts);

@@ -4,7 +4,7 @@
 export type Lang = "hi" | "en";
 export type Device = "desk" | "phone";
 export type Box = { x: number; y: number; w: number; h: number };
-export type Verb = "goto" | "click" | "fill" | "select" | "check" | "look";
+export type Verb = "goto" | "click" | "fill" | "select" | "check" | "look" | "upload";
 
 export type Step = {
   id: string;
