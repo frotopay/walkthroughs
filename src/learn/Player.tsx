@@ -69,7 +69,7 @@ export default function Player({ manifest: m, src, variants, onVariant, start = 
   const step = steps[i];
   const plan = useMemo(() => timeline(step, quick), [step, quick]);
 
-  useEffect(() => onStep?.(i), [i, onStep]);
+  useEffect(() => { onStep?.(i); }, [i, onStep]);
 
   // Elapsed and total time, as a video shows them: the steps before this one, and this one as far as it has played.
   const lengths = useMemo(() => steps.map((s) => Object.values(timeline(s, quick)).reduce((a, b) => a + (b ?? 0), 0)), [steps, quick]);
