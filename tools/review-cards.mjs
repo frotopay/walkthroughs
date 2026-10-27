@@ -1,15 +1,18 @@
 // Review cards from captured walkthroughs: one image per step with its title and caption, the screen before the action
 // with the target ringed where the manifest says, and the screen after it. What the Sonnet reviewers read
-// (plan/WALKTHROUGHS.md §3), and a first look at how the player and the PDF will draw a step.
+// before a release, and a first look at how a printed manual will draw a step.
 //
-//   node e2e/tools/review-cards.mjs                      every manifest under e2e/out
-//   node e2e/tools/review-cards.mjs register-property    one journey
+//   walkthroughs review-cards [--from e2e/out]                      every manifest captured
+//   walkthroughs review-cards [--from e2e/out] register-property    one journey
 import { readdir, readFile, rm, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { parseArgs } from "node:util";
 import { chromium } from "@playwright/test";
 
-const ROOT = path.resolve("e2e/out");
-const only = process.argv[2];
+const { values: args, positionals } = parseArgs({ options: { from: { type: "string", default: "e2e/out" } }, allowPositionals: true });
+const ROOT = path.resolve(args.from);
+const only = positionals[0];
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const pct = (v) => `${(v * 100).toFixed(2)}%`;
 
@@ -65,7 +68,7 @@ for (const journey of await readdir(ROOT)) {
     await rm(out, { recursive: true, force: true });
     await mkdir(out, { recursive: true });
     await writeFile(path.join(out, "cards.html"), page(m));
-    await tab.goto(`file://${path.join(out, "cards.html")}`);
+    await tab.goto(pathToFileURL(path.join(out, "cards.html")).href);
     await tab.evaluate(() => document.fonts.ready);
     await tab.waitForFunction(() => [...document.images].every((i) => i.complete));
     for (const s of m.steps) {

@@ -1,0 +1,17 @@
+/* The colours, type and shadows the player's Tailwind classes name. An app on Tailwind v4 gives its own values for
+   these in its @theme and adds `@source "../node_modules/@frotopay/walkthroughs/dist/player";` so its build keeps the
+   player's classes. The offline file uses these defaults; `walkthroughs offline --css` sets others after them. */
+@theme {
+  --color-primary: #4F46E5;
+  --color-primary-dark: #4338CA;
+  --color-primary-light: #EEF2FF;
+  --color-surface-alt: #F9FAFB;
+  --color-surface-hover: #F3F4F6;
+  --color-border: #E5E7EB;
+  --color-text: #111827;
+  --color-text-secondary: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --font-sans: "Noto Sans", "Noto Sans Devanagari", system-ui, -apple-system, sans-serif;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-modal: 0 20px 60px rgba(0, 0, 0, 0.12), 0 8px 20px rgba(0, 0, 0, 0.06);
+}

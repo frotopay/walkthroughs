@@ -1,4 +1,4 @@
-// A walkthrough as the journeys record it (e2e/lib/guide.ts, manifest schema 1) and as e2e/tools/publish-learn.mjs
+// A walkthrough as the recorder writes it (src/record/guide.ts, manifest schema 1) and as `walkthroughs publish`
 // lists them (index.json).
 
 export type Lang = "hi" | "en";

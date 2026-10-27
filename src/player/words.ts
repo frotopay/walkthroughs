@@ -1,5 +1,6 @@
-// The player's own words, so it reads the same in the app and in an offline file with no app around it.
-import type { Lang } from "./types";
+// The player's own words, so it reads the same in the app and in an offline file with no app around it; an app's
+// walkthrough index may use them too. Who a walkthrough is for (its persona) is the app's to name.
+import type { Lang } from "../manifest/types.js";
 
 const en = {
   play: "Play",
@@ -68,11 +69,3 @@ const hi: Words = {
 
 export const WORDS: Record<Lang, Words> = { en, hi };
 
-/** Who a walkthrough is for. */
-export const PERSONAS: Record<string, { en: string; hi: string }> = {
-  citizen: { en: "Citizens", hi: "नागरिक" },
-  "pt-clerk": { en: "Property tax clerk", hi: "संपत्ति कर लिपिक" },
-  "pt-verifier": { en: "Property tax document verifier", hi: "संपत्ति कर दस्तावेज़ सत्यापक" },
-  "pt-approver": { en: "Property tax approver", hi: "संपत्ति कर अनुमोदक" },
-  counter: { en: "Counter and cashier", hi: "काउंटर और खजांची" },
-};

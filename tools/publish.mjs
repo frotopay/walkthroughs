@@ -1,20 +1,24 @@
-// Walkthrough data for the player (plan/WALKTHROUGHS.md §2.3), from captured journeys: every passed manifest under
-// e2e/out/<journey>/<project>/ with the pictures it names, and index.json listing the walkthroughs with their titles in
-// both languages and the variants (desk/phone × hi/en) each has. Small enough to keep in git:
+// Walkthrough data for the player, from captured journeys: every passed manifest under <from>/<journey>/<project>/
+// with the pictures it names, and index.json listing the walkthroughs with their titles in both languages and the
+// variants (desk/phone × hi/en) each has:
 // - pictures at the screen's own size (a phone's at 1.5×), WebP quality 65;
 // - a step's before-screen that looks the same as the step before's after-screen is that same file;
 // - files are named by their content, so a capture that changes nothing changes no file.
 //
-//   node e2e/tools/publish-learn.mjs            → public/walkthroughs (what `vite preview` and the build serve)
-//   node e2e/tools/publish-learn.mjs <dir>
+//   walkthroughs publish [--from e2e/out] [--to public/walkthroughs] [--order citizen,clerk,…]
+//
+// --order lists personas in the order the index shows them; others follow, by name.
 import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { parseArgs } from "node:util";
 import sharp from "sharp";
 
-const FROM = path.resolve("e2e/out");
-const TO = path.resolve(process.argv[2] ?? "public/walkthroughs");
-const PERSONAS = ["citizen", "pt-clerk", "pt-verifier", "pt-approver", "counter"];
+const { values: args } = parseArgs({ options: { from: { type: "string", default: "e2e/out" }, to: { type: "string", default: "public/walkthroughs" }, order: { type: "string", default: "" } } });
+const FROM = path.resolve(args.from);
+const TO = path.resolve(args.to);
+const ORDER = args.order.split(",").filter(Boolean);
+const rank = (p) => (ORDER.includes(p) ? ORDER.indexOf(p) : ORDER.length);
 
 /** A picture at the size it is shown, and a small grey copy to tell near-identical screens apart. */
 async function encode(file, width) {
@@ -61,7 +65,7 @@ for (const journey of (await readdir(FROM)).sort()) {
     walkthroughs.set(journey, w);
   }
 }
-const list = [...walkthroughs.values()].sort((a, b) => PERSONAS.indexOf(a.persona) - PERSONAS.indexOf(b.persona) || a.journey.localeCompare(b.journey));
+const list = [...walkthroughs.values()].sort((a, b) => rank(a.persona) - rank(b.persona) || a.persona.localeCompare(b.persona) || a.journey.localeCompare(b.journey));
 await mkdir(TO, { recursive: true });
 await writeFile(path.join(TO, "index.json"), JSON.stringify({ schema: 1, published: new Date().toISOString(), walkthroughs: list }, null, 2));
 console.log(`${list.length} walkthroughs, ${list.reduce((n, w) => n + Object.keys(w.variants).length, 0)} variants → ${path.relative(process.cwd(), TO)}`);

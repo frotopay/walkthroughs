@@ -1,18 +1,35 @@
-// Single offline files of the walkthroughs (plan/WALKTHROUGHS.md §2.3): one HTML per walkthrough and language, with
-// the player, its styles, the desk and phone variants and every picture inside, so it plays from a pen drive in a
-// training room. Each file is opened once with the network blocked to prove it needs none.
+// Single offline files of the walkthroughs: one HTML per walkthrough and language, with the player, its styles, the
+// desk and phone variants and every picture inside, so it plays from a pen drive in a training room. Each file is
+// opened once with the network blocked to prove it needs none.
 //
-//   node e2e/tools/offline.mjs        reads public/walkthroughs (publish-learn.mjs), writes e2e/out/offline/
-import { execSync } from "node:child_process";
+//   walkthroughs offline [--from public/walkthroughs] [--out e2e/out/offline] [--brand "UPYOG Uttarakhand"]
+//                        [--personas personas.json] [--css theme.css]
+//
+// --from is what `walkthroughs publish` wrote. --personas names who each walkthrough is for ({ "citizen": { "en": …,
+// "hi": … } }); --css is added after the player's styles, to set its colours (--color-primary, …) and type.
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { parseArgs } from "node:util";
 import { chromium } from "@playwright/test";
 
-const FROM = path.resolve("public/walkthroughs");
-const OUT = path.resolve("e2e/out/offline");
-execSync("npx vite build --config vite.learn.config.ts", { stdio: "ignore" });
-const js = await readFile("dist-learn/player.js", "utf8");
-const css = await readFile("dist-learn/player.css", "utf8").catch(() => "");
+const { values: args } = parseArgs({
+  options: {
+    from: { type: "string", default: "public/walkthroughs" },
+    out: { type: "string", default: "e2e/out/offline" },
+    brand: { type: "string", default: "" },
+    personas: { type: "string" },
+    css: { type: "string" },
+  },
+});
+const FROM = path.resolve(args.from);
+const OUT = path.resolve(args.out);
+const BUILT = fileURLToPath(new URL("../dist/offline/", import.meta.url));
+const js = await readFile(path.join(BUILT, "player.js"), "utf8").catch(() => {
+  throw new Error(`no offline player at ${BUILT}: build the package (npm run build)`);
+});
+const css = (await readFile(path.join(BUILT, "player.css"), "utf8").catch(() => "")) + (args.css ? await readFile(args.css, "utf8") : "");
+const personas = args.personas ? JSON.parse(await readFile(args.personas, "utf8")) : {};
 const safe = (s) => s.replace(/<\/script/gi, "<\\/script");
 
 // The fonts inside the file, Latin and Devanagari, regular and bold: with no network, a machine without a Devanagari
@@ -46,10 +63,10 @@ for (const w of index.walkthroughs) {
       for (const f of await readdir(path.join(FROM, w.journey, v)))
         if (f.endsWith(".webp")) pictures[`${v}/${f}`] = `data:image/webp;base64,${(await readFile(path.join(FROM, w.journey, v, f))).toString("base64")}`;
     }
-    const title = `${w.title[lang] ?? w.title.en} · UPYOG Uttarakhand`;
+    const title = [w.title[lang] ?? w.title.en, args.brand].filter(Boolean).join(" · ");
     const html = `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title.replace(/</g, "&lt;")}</title><style>${fontCss}${css}</style></head><body><div id="root"></div>
-<script>window.__WALKTHROUGH__=${safe(JSON.stringify({ variants, pictures }))};</script>
+<script>window.__WALKTHROUGH__=${safe(JSON.stringify({ variants, pictures, persona: personas[w.persona] }))};</script>
 <script type="module">${safe(js)}</script></body></html>`;
     const file = path.join(OUT, `${w.journey}.${lang}.html`);
     await writeFile(file, html);
@@ -59,7 +76,7 @@ for (const w of index.walkthroughs) {
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
     await page.route(/^https?:/, (r) => r.abort());
-    await page.goto(`file://${file}`);
+    await page.goto(pathToFileURL(file).href);
     await page.getByTestId("player").waitFor({ timeout: 10_000 });
     const pic = await page.locator('[data-testid="stage"] img').first().evaluate((i) => i.complete && i.naturalWidth > 0);
     if (errors.length || !pic) throw new Error(`${path.basename(file)} does not play offline: ${errors.join("; ") || "no picture"}`);

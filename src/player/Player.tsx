@@ -1,12 +1,12 @@
-// The walkthrough player (plan/WALKTHROUGHS.md §2.3): one step at a time, moving like a video. Each step shows the
+// The walkthrough player (README: Play): one step at a time, moving like a video. Each step shows the
 // screen before the action; a cursor glides to the control while the rest of the screen dims; a fill types itself in;
 // a click ripples; the screen cross-fades to what came of it; it holds long enough to read the caption, then the next
 // step begins. Play, pause, back, next, chapters, speed, practice mode (stop after each step), the language and the
 // screen switch in place, and keys. It takes everything as props, so the app and the offline file share it.
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ChevronLeft, ChevronRight, ExternalLink, ListOrdered, Monitor, Pause, Play, RotateCcw, Smartphone, X } from "lucide-react";
-import type { Box, Device, Lang, Manifest, Step } from "./types";
-import { WORDS } from "./words";
+import type { Box, Device, Lang, Manifest, Step } from "../manifest/types.js";
+import { WORDS } from "./words.js";
 
 type Phase = "enter" | "aim" | "act" | "after" | "hold";
 const ORDER: Phase[] = ["enter", "aim", "act", "after", "hold"];

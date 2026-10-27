@@ -1,4 +1,4 @@
-// The step recorder (plan/WALKTHROUGHS.md §2.1–2.2). A journey takes each user action through it. In test mode it only
+// The step recorder (README: Record). A journey takes each user action through it. In test mode it only
 // acts and checks; with CAPTURE=1 it also keeps, per step, a clean screenshot before the action, the target's box, the
 // action and the caption in the project's language, and a screenshot after it, then writes manifest.json for the
 // walkthrough player and the PDF manual.
@@ -38,13 +38,14 @@ type Opts = {
   show?: Locator;
 };
 
+/** Where captures go unless a guide is told otherwise: e2e/out under the directory the tests run from. */
 export const ROOT = path.resolve("e2e/out");
 let commit: string | undefined;
-function webCommit(): string {
+function webCommit(src: string): string {
   if (commit === undefined) {
     try {
       const head = execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
-      commit = execSync("git status --porcelain -- src", { encoding: "utf8" }).trim() ? `${head}+changes` : head;
+      commit = execSync(`git status --porcelain -- ${src}`, { encoding: "utf8" }).trim() ? `${head}+changes` : head;
     } catch {
       commit = "unknown";
     }
@@ -68,6 +69,16 @@ export function captionProblems(c: Captions): string[] {
   return out;
 }
 
+export type GuideOptions = {
+  lang: Lang; device: string; project: string; capture: boolean; dpr: number;
+  /** Where captures go (default e2e/out). */
+  out?: string;
+  /** The API the app ran against, recorded in the manifest. */
+  api?: string;
+  /** The app's source, whose commit (and "+changes" if edited) the manifest records (default src). */
+  src?: string;
+};
+
 const round = (v: number) => Math.round(Math.min(Math.max(v, 0), 1) * 10_000) / 10_000;
 
 export class Guide<C extends Captions> {
@@ -81,11 +92,11 @@ export class Guide<C extends Captions> {
   constructor(
     readonly page: Page,
     readonly c: C,
-    readonly o: { lang: Lang; device: string; project: string; capture: boolean; dpr: number },
+    readonly o: GuideOptions,
   ) {
     const problems = captionProblems(c);
     if (problems.length) throw new Error(problems.join("\n"));
-    this.dir = path.join(ROOT, c.journey, o.project);
+    this.dir = path.join(o.out ?? ROOT, c.journey, o.project);
     page.on("request", (r) => this.inflight.add(r));
     page.on("requestfinished", (r) => this.inflight.delete(r));
     page.on("requestfailed", (r) => this.inflight.delete(r));
@@ -261,7 +272,7 @@ export class Guide<C extends Captions> {
       persona: this.c.persona,
       project, lang, device,
       viewport: { w: vp?.width, h: vp?.height, dpr },
-      app: { web: webCommit(), api: process.env.E2E_API_URL ?? "https://api.udduk.com" },
+      app: { web: webCommit(this.o.src ?? "src"), api: this.o.api ?? "" },
       captured: new Date().toISOString(),
       status,
       title: this.c.title[lang],
