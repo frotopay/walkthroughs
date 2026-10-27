@@ -1,6 +1,6 @@
 {
   "name": "@frotopay/walkthroughs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser journeys that test an app and record it as a step-by-step walkthrough: the recorder, the player, offline files and review cards.",
   "license": "UNLICENSED",
   "private": true,

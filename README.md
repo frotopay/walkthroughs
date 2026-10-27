@@ -54,12 +54,12 @@ Wrap it in a Playwright fixture so each journey gets one and `finish` runs when 
 ## Publish
 
 ```bash
-npx walkthroughs publish --from e2e/out --to public/walkthroughs --order citizen,pt-verifier,counter
+npx walkthroughs publish --from e2e/out --to public/walkthroughs --personas personas.json
 ```
 
 Takes every passed capture, resizes and re-encodes the pictures (WebP 65), shares a before-screen with the after-screen
-before it when they look the same, names files by their content, and writes `index.json`. `--order` sets the order of
-personas in the index.
+before it when they look the same, names files by their content, and writes `index.json`. `--personas` (a file naming
+them, `{ "citizen": { "en": …, "hi": … } }`) or `--order citizen,clerk,…` sets the order of personas in the index.
 
 ## Play
 

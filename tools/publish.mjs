@@ -5,19 +5,20 @@
 // - a step's before-screen that looks the same as the step before's after-screen is that same file;
 // - files are named by their content, so a capture that changes nothing changes no file.
 //
-//   walkthroughs publish [--from e2e/out] [--to public/walkthroughs] [--order citizen,clerk,…]
+//   walkthroughs publish [--from e2e/out] [--to public/walkthroughs] [--order citizen,clerk,… | --personas personas.json]
 //
-// --order lists personas in the order the index shows them; others follow, by name.
+// --order lists personas in the order the index shows them, or --personas takes that order from the keys of the file
+// that names them (as `walkthroughs offline --personas` reads it); others follow, by name.
 import { createHash } from "node:crypto";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import sharp from "sharp";
 
-const { values: args } = parseArgs({ options: { from: { type: "string", default: "e2e/out" }, to: { type: "string", default: "public/walkthroughs" }, order: { type: "string", default: "" } } });
+const { values: args } = parseArgs({ options: { from: { type: "string", default: "e2e/out" }, to: { type: "string", default: "public/walkthroughs" }, order: { type: "string", default: "" }, personas: { type: "string" } } });
 const FROM = path.resolve(args.from);
 const TO = path.resolve(args.to);
-const ORDER = args.order.split(",").filter(Boolean);
+const ORDER = args.personas ? Object.keys(JSON.parse(await readFile(args.personas, "utf8"))) : args.order.split(",").filter(Boolean);
 const rank = (p) => (ORDER.includes(p) ? ORDER.indexOf(p) : ORDER.length);
 
 /** A picture at the size it is shown, and a small grey copy to tell near-identical screens apart. */
