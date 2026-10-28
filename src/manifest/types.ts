@@ -27,6 +27,8 @@ export type Manifest = {
   schema: 1;
   journey: string;
   persona: string;
+  /** The service it is about, when its captions name one. */
+  module?: string;
   project: string;
   lang: Lang;
   device: Device;
@@ -44,6 +46,7 @@ export type L10n = { en?: string; hi?: string };
 export type IndexEntry = {
   journey: string;
   persona: string;
+  module?: string;
   title: L10n;
   summary: L10n;
   variants: Record<string, { steps: number; ms: number; captured: string }>;

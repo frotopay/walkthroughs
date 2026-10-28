@@ -14,6 +14,8 @@ export type L10n = { en: string; hi: string };
 export type Captions = {
   journey: string;
   persona: string;
+  /** The service it is about (`property`, `pets` …), for an index by service; the app names them. */
+  module?: string;
   title: L10n;
   summary: L10n;
   chapters: Record<string, L10n>;
@@ -270,6 +272,7 @@ export class Guide<C extends Captions> {
       schema: 1,
       journey: this.c.journey,
       persona: this.c.persona,
+      ...(this.c.module ? { module: this.c.module } : {}),
       project, lang, device,
       viewport: { w: vp?.width, h: vp?.height, dpr },
       app: { web: webCommit(this.o.src ?? "src"), api: this.o.api ?? "" },

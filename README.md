@@ -41,7 +41,8 @@ await g.finish(passed ? "passed" : "failed");
 
 - **Captions** (`Captions`) are the walkthrough's title, summary, chapters and every step's title and caption, in
   English and Hindi. A guide refuses captions missing a language, a step with no caption, and (on a pass) a caption no
-  step used.
+  step used. An optional `module` names the service it is about; it is carried into the manifest and `index.json`, so
+  an app can list walkthroughs by service.
 - **Steps:** `goto`, `click`, `fill`, `select`, `check`, `upload`, `look`; `then:` is what must be true after it,
   `show:` what a `goto` rings on the screen it arrives at, `at:` a point in a map.
 - **Still screens:** before a picture, it waits for no request in flight for 400 ms, nothing `aria-busy`, no

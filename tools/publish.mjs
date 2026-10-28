@@ -131,7 +131,7 @@ for (const journey of (await readdir(FROM)).sort()) {
       }
     }
     manifests.push([`${CHANNEL}/${journey}/${project}/manifest.json`, JSON.stringify(m)]);
-    const w = walkthroughs.get(journey) ?? { journey, persona: m.persona, title: {}, summary: {}, variants: {} };
+    const w = walkthroughs.get(journey) ?? { journey, persona: m.persona, ...(m.module ? { module: m.module } : {}), title: {}, summary: {}, variants: {} };
     w.title[m.lang] = m.title;
     w.summary[m.lang] = m.summary;
     w.variants[project] = { steps: m.steps.length, ms: m.steps.reduce((t, s) => t + playMs(s), 0), captured: m.captured, app: m.app };
