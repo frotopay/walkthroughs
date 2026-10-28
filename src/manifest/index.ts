@@ -1,2 +1,2 @@
 export * from "./types.js";
-export { loader, pickVariant, type Loader } from "./data.js";
+export { loader, pickVariant, type Loader, type LoaderOptions } from "./data.js";

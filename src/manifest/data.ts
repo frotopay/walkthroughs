@@ -1,5 +1,6 @@
-// Where the walkthroughs are: index.json and, per walkthrough and variant, a manifest and its pictures
-// (`walkthroughs publish` writes them), under one base URL: a folder the app serves, or a bucket.
+// Where the walkthroughs are: a channel, under one base URL (a folder the app serves, or a bucket), as
+// `walkthroughs publish` writes it: index.json and, per walkthrough and variant, a manifest; the pictures they name
+// are in pics/ beside the channel, shared by every channel.
 import type { Device, Index, Lang, Manifest } from "./types.js";
 
 export type Loader = {
@@ -9,8 +10,15 @@ export type Loader = {
   pictureOf: (journey: string, variant: string) => (file: string) => string;
 };
 
-export function loader(base: string): Loader {
+export type LoaderOptions = {
+  /** Where the pictures are, if not in pics/ beside the channel. */
+  pics?: string;
+};
+
+/** `base` is the channel: `https://learn.example.com/beta`, or `/walkthroughs/latest` for a folder the app serves. */
+export function loader(base: string, o: LoaderOptions = {}): Loader {
   const root = base.replace(/\/$/, "");
+  const pics = (o.pics ?? `${root.includes("/") ? root.slice(0, root.lastIndexOf("/")) : "."}/pics`).replace(/\/$/, "");
   async function json<T>(path: string): Promise<T> {
     const r = await fetch(`${root}/${path}`);
     if (!r.ok) throw new Error(`${r.status} ${path}`);
@@ -19,7 +27,7 @@ export function loader(base: string): Loader {
   return {
     getIndex: () => json<Index>("index.json"),
     getManifest: (journey, variant) => json<Manifest>(`${journey}/${variant}/manifest.json`),
-    pictureOf: (journey, variant) => (file) => `${root}/${journey}/${variant}/${file}`,
+    pictureOf: () => (file) => `${pics}/${file}`,
   };
 }
 

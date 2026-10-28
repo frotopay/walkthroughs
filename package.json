@@ -1,18 +1,34 @@
 {
   "name": "@frotopay/walkthroughs",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Browser journeys that test an app and record it as a step-by-step walkthrough: the recorder, the player, offline files and review cards.",
   "license": "UNLICENSED",
   "private": true,
   "type": "module",
   "exports": {
-    "./record": { "types": "./dist/record/index.d.ts", "default": "./dist/record/index.js" },
-    "./manifest": { "types": "./dist/manifest/index.d.ts", "default": "./dist/manifest/index.js" },
-    "./player": { "types": "./dist/player/index.d.ts", "default": "./dist/player/index.js" },
+    "./record": {
+      "types": "./dist/record/index.d.ts",
+      "default": "./dist/record/index.js"
+    },
+    "./manifest": {
+      "types": "./dist/manifest/index.d.ts",
+      "default": "./dist/manifest/index.js"
+    },
+    "./player": {
+      "types": "./dist/player/index.d.ts",
+      "default": "./dist/player/index.js"
+    },
     "./theme.css": "./src/player/theme.css"
   },
-  "bin": { "walkthroughs": "bin/walkthroughs.mjs" },
-  "files": ["dist", "bin", "tools", "src/player/theme.css"],
+  "bin": {
+    "walkthroughs": "bin/walkthroughs.mjs"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "tools",
+    "src/player/theme.css"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json && vite build --config vite.offline.config.ts --logLevel warn",
     "prepare": "npm run build",
@@ -26,8 +42,12 @@
     "sharp": ">=0.33"
   },
   "peerDependenciesMeta": {
-    "lucide-react": { "optional": true },
-    "react": { "optional": true }
+    "lucide-react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",
@@ -43,5 +63,8 @@
     "tailwindcss": "4.2.2",
     "typescript": "5.6.3",
     "vite": "6.0.3"
+  },
+  "dependencies": {
+    "aws4fetch": "1.0.20"
   }
 }

@@ -54,7 +54,8 @@ function page(m) {
 </style></head><body>${cards.join("")}</body></html>`;
 }
 
-const browser = await chromium.launch();
+// PW_CHANNEL=chrome uses the Chrome already installed instead of Playwright's own.
+const browser = await chromium.launch({ channel: process.env.PW_CHANNEL });
 const context = await browser.newContext({ deviceScaleFactor: 1 });
 const tab = await context.newPage();
 let made = 0;

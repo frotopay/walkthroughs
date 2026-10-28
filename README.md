@@ -20,7 +20,7 @@ First taken out of [upyog-web](https://github.com/udd-ddn/upyog-web), with its h
 ## Install
 
 ```bash
-npm install github:frotopay/walkthroughs#v0.1.0
+npm install github:frotopay/walkthroughs#v0.2.0
 ```
 
 The repository is private: the machine installing needs read access to it (a deploy key or a read-only token).
@@ -54,12 +54,28 @@ Wrap it in a Playwright fixture so each journey gets one and `finish` runs when 
 ## Publish
 
 ```bash
-npx walkthroughs publish --from e2e/out --to public/walkthroughs --personas personas.json
+npx walkthroughs publish --from e2e/out --to public/walkthroughs --personas personas.json     # to a folder
+npx walkthroughs publish --from e2e/out --r2 my-bucket --channel beta --personas personas.json # to Cloudflare R2
 ```
 
 Takes every passed capture, resizes and re-encodes the pictures (WebP 65), shares a before-screen with the after-screen
-before it when they look the same, names files by their content, and writes `index.json`. `--personas` (a file naming
-them, `{ "citizen": { "en": …, "hi": … } }`) or `--order citizen,clerk,…` sets the order of personas in the index.
+before it when they look the same, names pictures by their content, and writes the manifests and `index.json`.
+`--personas` (a file naming them, `{ "citizen": { "en": …, "hi": … } }`) or `--order citizen,clerk,…` sets the order of
+personas in the index.
+
+A folder and a bucket hold the same layout:
+
+```
+pics/<hash>.webp                               every picture, shared by every channel; never changes
+<channel>/index.json                           what the player lists
+<channel>/<journey>/<variant>/manifest.json    one walkthrough, one language, one screen
+```
+
+A channel (`--channel`, default `latest`) is a line of releases, such as `beta`; the app reads one. To R2 it sends only
+pictures not already in `pics/`, then the manifests, then `index.json` last, so a reader never gets an index naming a
+file not yet there. It needs `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` (an R2 API token with
+write access to the bucket). Pictures go up with `Cache-Control: immutable` for a year, manifests and the index for five
+minutes. The bucket needs a public domain and CORS for the app's origins.
 
 ## Play
 
@@ -67,7 +83,7 @@ them, `{ "citizen": { "en": …, "hi": … } }`) or `--order citizen,clerk,…` 
 import { Player, WORDS } from "@frotopay/walkthroughs/player";
 import { loader, pickVariant } from "@frotopay/walkthroughs/manifest";
 
-const { getIndex, getManifest, pictureOf } = loader("https://learn.example.com/beta");
+const { getIndex, getManifest, pictureOf } = loader("https://learn.example.com/beta"); // a channel; pictures from ../pics
 <Player manifest={m} src={pictureOf(journey, variant)} variants={variants} onVariant={…} start={0} onStep={…} />
 ```
 
@@ -88,7 +104,7 @@ so its build keeps the player's classes. `@frotopay/walkthroughs/theme.css` has 
 ## Offline files
 
 ```bash
-npx walkthroughs offline --from public/walkthroughs --out e2e/out/offline --brand "UPYOG Uttarakhand" \
+npx walkthroughs offline --from public/walkthroughs/latest --out e2e/out/offline --brand "UPYOG Uttarakhand" \
   --personas personas.json --css theme-overrides.css
 ```
 
@@ -99,7 +115,7 @@ each is opened once with the network blocked to prove it plays. `--css` comes af
 ## Review cards
 
 ```bash
-npx walkthroughs review-cards --from e2e/out [journey]
+npx walkthroughs review-cards --from e2e/out [journey]   # PW_CHANNEL=chrome: the installed Chrome
 ```
 
 One image per step: the caption, the before-screen with the target ringed, the after-screen. For reviewing a capture
