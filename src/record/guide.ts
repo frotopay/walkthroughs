@@ -50,8 +50,11 @@ let commit: string | undefined;
 function webCommit(src: string): string {
   if (commit === undefined) {
     try {
-      const head = execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
-      commit = execSync(`git status --porcelain -- ${src}`, { encoding: "utf8" }).trim() ? `${head}+changes` : head;
+      // Only read, and only in the folder the tests run in: trusted even on a drive that records no owners (git's
+      // "dubious ownership").
+      const git = `git -c safe.directory="${process.cwd().replace(/\\/g, "/")}"`;
+      const head = execSync(`${git} rev-parse --short HEAD`, { encoding: "utf8" }).trim();
+      commit = execSync(`${git} status --porcelain -- ${src}`, { encoding: "utf8" }).trim() ? `${head}+changes` : head;
     } catch {
       commit = "unknown";
     }
