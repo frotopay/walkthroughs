@@ -44,7 +44,8 @@ await g.finish(passed ? "passed" : "failed");
   step used. An optional `module` names the service it is about; it is carried into the manifest and `index.json`, so
   an app can list walkthroughs by service.
 - **Steps:** `goto`, `click`, `fill`, `select`, `check`, `upload`, `look`; `then:` is what must be true after it,
-  `show:` what a `goto` rings on the screen it arrives at, `at:` a point in a map.
+  `show:` what a `goto` rings on the screen it arrives at, `at:` a point in a map. `secret:` keeps a typed value (a
+  code, a password) out of the manifest; `mask:` covers something on this step's pictures and all after it.
 - **Still screens:** before a picture, it waits for no request in flight for 400 ms, nothing `aria-busy`, no
   unfinished image, the scroll to stop and the fonts; and takes it again if the target moved.
 - **Options:** `out` (default `e2e/out`), `api` (recorded in the manifest), `src` (the folder whose git commit, with

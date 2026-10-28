@@ -38,6 +38,10 @@ type Opts = {
   at?: { x: number; y: number };
   /** For a goto: what to ring on the screen it arrives at. */
   show?: Locator;
+  /** A value not to keep, such as a code or a password: the manifest has dots in its place. */
+  secret?: boolean;
+  /** What to cover on this step's pictures and every one after it, such as the boxes a code is typed into. */
+  mask?: Locator;
 };
 
 /** Where captures go unless a guide is told otherwise: e2e/out under the directory the tests run from. */
@@ -88,6 +92,7 @@ export class Guide<C extends Captions> {
   private chapterId: string | null = null;
   private chapters: string[] = [];
   private started = false;
+  private masks: Locator[] = [];
   private inflight = new Set<Request>();
   readonly dir: string;
 
@@ -150,12 +155,13 @@ export class Guide<C extends Captions> {
     const { lang, capture } = this.o;
     const step: Step = {
       id, n: this.steps.length + 1, chapter: this.chapterId, title: cap.title[lang], say: cap.say[lang],
-      action: { verb, ...(target ? { target: String(target) } : {}), ...(value !== undefined ? { value } : {}) },
+      action: { verb, ...(target ? { target: String(target) } : {}), ...(value !== undefined ? { value: opts.secret ? "•".repeat(value.length) : value } : {}) },
       url: "", checks: [],
       // Long enough to read the caption: Hindi about 12 characters a second, English about 15, never under 2.5 s.
       hold_ms: Math.max(2500, Math.round((cap.say[lang].length / (lang === "hi" ? 12 : 15)) * 1000)),
     };
     const name = String(step.n).padStart(2, "0");
+    if (opts.mask) this.masks.push(opts.mask);
     if (target) await this.bringIntoView(target);
     if (capture && verb !== "goto") {
       await this.settle();
@@ -252,7 +258,7 @@ export class Guide<C extends Captions> {
       await mkdir(this.dir, { recursive: true });
       this.started = true;
     }
-    const png = await this.page.screenshot({ animations: "disabled", caret: "hide" });
+    const png = await this.page.screenshot({ animations: "disabled", caret: "hide", mask: this.masks, maskColor: "#cbd5e1" });
     const file = `${name}.webp`;
     await sharp(png).webp({ quality: 80 }).toFile(path.join(this.dir, file));
     return file;
