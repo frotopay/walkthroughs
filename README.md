@@ -77,7 +77,11 @@ A channel (`--channel`, default `latest`) is a line of releases, such as `beta`;
 pictures not already in `pics/`, then the manifests, then `index.json` last, so a reader never gets an index naming a
 file not yet there. It needs `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` (an R2 API token with
 write access to the bucket). Pictures go up with `Cache-Control: immutable` for a year, manifests and the index for five
-minutes. The bucket needs a public domain and CORS for the app's origins.
+minutes. The bucket needs a public domain and CORS for the app's origins. Another S3-compatible store works the same way:
+`R2_ENDPOINT` is its HTTPS endpoint (path-style, `https://s3.example.com`, in place of `R2_ACCOUNT_ID`), `R2_REGION`
+the region it signs with (default `auto`, R2's), and `R2_ACL` (such as `public-read`) a canned ACL for each file, where
+the bucket is not public by its policy. A wrong region is refused with the store's own message, which usually names the
+right one.
 
 ## Play
 

@@ -61,16 +61,30 @@ async function folder(dir) {
 
 /** An R2 bucket through its S3 API. A channel's manifests are overwritten; old ones no index names are left. */
 async function r2(bucket) {
-  // R2_ENDPOINT stands in for the account's endpoint, to try it against another S3 API.
+  // R2_ENDPOINT stands in for the account's endpoint, for another S3 API (path-style), and R2_REGION for the region
+  // that store signs with: R2 takes "auto", most others want their own.
   const need = [process.env.R2_ENDPOINT ? "" : "R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY"].filter((k) => k && !process.env[k]);
   if (need.length) throw new Error(`publishing to R2 needs ${need.join(", ")}`);
   const { AwsClient } = await import("aws4fetch");
-  const s3 = new AwsClient({ accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY, service: "s3", region: "auto" });
+  const s3 = new AwsClient({ accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY, service: "s3",
+    region: process.env.R2_REGION ?? "auto" });
   const base = `${process.env.R2_ENDPOINT ?? `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`}/${bucket}`;
+  // A store that drops a connection now and then, or answers 5xx, is asked again: five tries, a few seconds apart.
   async function call(url, init) {
-    const r = await s3.fetch(url, init);
-    if (!r.ok) throw new Error(`R2 ${init?.method ?? "GET"} ${url.replace(base, bucket)}: ${r.status} ${(await r.text()).slice(0, 300)}`);
-    return r;
+    for (let attempt = 1; ; attempt++) {
+      let r;
+      try {
+        r = await s3.fetch(url, init);
+      } catch (e) {
+        if (attempt >= 5) throw e;
+      }
+      if (r && r.status < 500) {
+        if (!r.ok) throw new Error(`R2 ${init?.method ?? "GET"} ${url.replace(base, bucket)}: ${r.status} ${(await r.text()).slice(0, 300)}`);
+        return r;
+      }
+      if (r && attempt >= 5) throw new Error(`R2 ${init?.method ?? "GET"} ${url.replace(base, bucket)}: ${r.status} ${(await r.text()).slice(0, 300)}`);
+      await new Promise((ok) => setTimeout(ok, 2000 * attempt));
+    }
   }
   // The pictures already there, so a run sends only new ones.
   const there = new Set();
@@ -84,7 +98,9 @@ async function r2(bucket) {
     where: `r2://${bucket}/${CHANNEL} (${there.size} pictures there before)`,
     has: async (key) => there.has(key),
     async put(key, body, kind) {
-      await call(`${base}/${key}`, { method: "PUT", body, headers: { "Content-Type": kind.type, "Cache-Control": kind.cache } });
+      // R2_ACL (e.g. public-read) for a store whose bucket is not public by policy: each file is made readable as it goes up.
+      const acl = process.env.R2_ACL ? { "x-amz-acl": process.env.R2_ACL } : {};
+      await call(`${base}/${key}`, { method: "PUT", body, headers: { "Content-Type": kind.type, "Cache-Control": kind.cache, ...acl } });
       there.add(key);
     },
   };
