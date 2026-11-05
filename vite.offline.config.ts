@@ -10,11 +10,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   base: "./",
   publicDir: false,
+  // At most 64 files open at once: the player imports lucide-react, whose ~1,500 icon files would otherwise all be
+  // opened together, past a build machine's open-file limit (EMFILE on Cloudflare's builder, 5 Nov 2026).
   build: {
     outDir: fileURLToPath(new URL("dist/offline", import.meta.url)),
     emptyOutDir: true,
     cssCodeSplit: false,
     assetsInlineLimit: 100_000_000,
-    rollupOptions: { output: { inlineDynamicImports: true, entryFileNames: "player.js", assetFileNames: "player[extname]" } },
+    rollupOptions: { maxParallelFileOps: 64, output: { inlineDynamicImports: true, entryFileNames: "player.js", assetFileNames: "player[extname]" } },
   },
 });
